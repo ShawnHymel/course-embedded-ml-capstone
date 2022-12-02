@@ -1,10 +1,14 @@
 /**
  * Data collection programming assignment
  * 
- * Your task is to modify the code below (look for the "YOUR CODE HERE" tags) to
- * read accelerometer and gyroscope data from the IMU for 1 second with a 100 Hz
- * sampling rate and print the raw values to the terminal in a comma-separated
- * values (CSV) format.
+ * Your task is to modify the code below to read accelerometer and gyroscope 
+ * data from the IMU for 1.5 seconds with a 100 Hz sampling rate and print the 
+ * raw values to the terminal in a comma-separated values (CSV) format. Put your
+ * code between the following tags:
+ *
+ *  // --- YOUR CODE HERE ---
+ * 
+ *  // --- END CODE ---
  * 
  * Every 10 ms, add 6 samples (acc_x, acc_y, acc_z, gyr_x, gyr_y, gyr_z) to 
  * input_buf[]. The order of input_buf[] will be as follows:
@@ -18,17 +22,9 @@
  * can use the millis() function to get the timestamp. Record the timestamp in 
  * the timestamps[] buffer. 
  * 
- * Once you have filled the buffer with 600 values (100 readings, each with 6
+ * Once you have filled the buffer with 900 values (150 readings, each with 6
  * channels), print the header with the channel names, and then print the 
- * timestamp and values of each reading on a new line. For example, the first
- * 4 readings would look like this on the console:
- * 
- *  timestamp,accX,accY,accZ,gyrX,gyrY,gyrZ
- *  0,1.47,1.69,9.19,1.59,-0.55,-1.59
- *  10,1.50,1.61,9.01,0.98,-0.37,-1.89
- *  20,1.50,1.62,8.85,0.61,-0.06,-1.59
- *  30,1.54,1.64,8.65,0.18,-0.55,-1.34
- *  ...
+ * timestamp and values of each reading on a new line. 
  * 
  * You may print other things to the console to help you debug. However, when
  * you are ready to actually collect data or submit this assignment to the
@@ -39,11 +35,22 @@
  * Makefile for this project. In a console, enter:
  * 
  *  make -j
- *  ./build/app tests/alpha.8ed919a3a61d.csv
+ *  ./build/app tests/alpha.9af6dce9cdd9.gf.csv
  * 
  * This will run the simulator and feed values from the given .csv file to your
- * IMU object. You should see a header and CSV values printed to the screen 
- * (they should match what's in the .csv file).
+ * IMU object. You should see a header and CSV values printed to the screen. For
+ * example, the readings would look like this on the console (truncated for brevity):
+ * 
+ *  timestamp,accX,accY,accZ,gyrX,gyrY,gyrZ
+ *  0.0,-9.62,1.3,1.35,6.16,14.1,-3.78
+ *  10.0,-9.81,1.36,1.62,12.94,12.27,-6.16
+ *  20.0,-9.84,1.47,1.86,3.97,18.8,-9.28
+ *  30.0,-9.93,1.58,0.85,3.72,19.53,-10.62
+ *  ...
+ *  1490.0,0.41,-8.39,12.01,2.44,-44.01,-55.48
+ *
+ * Note that the accelerometer readings have been converted from G-force to
+ * m/s^2, but the gyroscope readings should match what's in the file.
  * 
  * Try with the other test files!
  * 
@@ -51,6 +58,10 @@
  * it run on the Arduino Nano 33 BLE Sense. If you run 
  * serial-data-collect-csv.py and connect it to the serial port with your
  * Arduino, it will save your CSV readings in .csv files.
+ * 
+ * Author: Shawn Hymel (EdgeImpulse, Inc.)
+ * Date: December 2, 2022
+ * License: Apache-2.0 (apache.org/licenses/LICENSE-2.0)
  */
 
 // Include a library to help us read from the attached IMU. If not on an 
@@ -72,7 +83,7 @@
 #define SAMPLING_FREQ_HZ    100       // 100 Hz sampling rate
 #define SAMPLING_PERIOD_MS  1000 / SAMPLING_FREQ_HZ     // Sampling period (ms)
 #define NUM_CHANNELS        6         // Accel x, y, z and gyro x, y, z
-#define NUM_READINGS        100       // 100 readings at 100 Hz is 1 sec window
+#define NUM_READINGS        150       // 150 readings at 100 Hz is 1.5 sec window
 
 // Function declarations
 void ei_printf(const char *format, ...);
@@ -131,13 +142,14 @@ void loop() {
     digitalWrite(LED_R_PIN, LOW);
 #endif
 
-    // Sample the IMU for 1 second. You should end up with 100 readings for each 
-    // of the 6 channels after the 1 second is over.
+    // Sample the IMU for 1.5 seconds. You should have 150 readings for each of
+    // the 6 channels after the 1.5 seconds is over.
     //  - Store the timestamp in the timestamps[i] element
     //  - Read acc_x, acc_y, acc_z, gyr_x, gyr_y, and gyr_z from the IMU. See 
     //    the documentation here to read from the accelerometer and gyroscope:
     //    https://www.arduino.cc/reference/en/libraries/arduino_lsm9ds1/
-    //  - Convert accelerometer raw readings from G-force to m/s^2
+    //  - Convert accelerometer raw readings from G-force to m/s^2 (multiply the
+    //    raw G-force reading by CONVERT_G_TO_MS2)
     //  - Recall that the order of input_buf[] should be 
     //    [acc_x0, acc_y0, acc_z0, gyr_x0, gyr_y0, gyr_z0, acc_x1, ...]
     //  - Make sure you wait between each reading long enough for a 100 Hz 
