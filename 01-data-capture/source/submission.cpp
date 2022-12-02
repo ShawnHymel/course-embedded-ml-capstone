@@ -39,15 +39,17 @@
  * 
  * This will run the simulator and feed values from the given .csv file to your
  * IMU object. You should see a header and CSV values printed to the screen. For
- * example, the readings would look like this on the console (truncated for brevity):
+ * example, the readings would look like this on the console (truncated for 
+ * brevity):
  * 
  *  timestamp,accX,accY,accZ,gyrX,gyrY,gyrZ
- *  0.0,-9.62,1.3,1.35,6.16,14.1,-3.78
- *  10.0,-9.81,1.36,1.62,12.94,12.27,-6.16
- *  20.0,-9.84,1.47,1.86,3.97,18.8,-9.28
- *  30.0,-9.93,1.58,0.85,3.72,19.53,-10.62
+ *  0,-9.61,1.27,1.37,6.16,14.10,-3.78
+ *  10,-9.81,1.37,1.67,12.94,12.27,-6.16
+ *  20,-9.81,1.47,1.86,3.97,18.80,-9.28
+ *  30,-9.90,1.57,0.88,3.72,19.53,-10.62
+ *  40,-10.00,1.37,0.59,11.05,14.04,-13.24
  *  ...
- *  1490.0,0.41,-8.39,12.01,2.44,-44.01,-55.48
+ *  1490,0.39,-8.43,11.96,2.44,-44.01,-55.48
  *
  * Note that the accelerometer readings have been converted from G-force to
  * m/s^2, but the gyroscope readings should match what's in the file.
