@@ -72,9 +72,10 @@ void setup() {
     ei_impulse_result_t result; // Used to store inference output
     EI_IMPULSE_ERROR res;       // Return code from inference
 
-    // Initialize serial (Arduino only)
+    // Initialize serial (Arduino only) and wait to connect
 #ifdef ARDUINO
     Serial.begin(115200);
+    while (!Serial);
 #endif
 
     // run_classifier() uses a callback function to fill its internal buffer
