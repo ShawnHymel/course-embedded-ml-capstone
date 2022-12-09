@@ -266,7 +266,7 @@ EI_IMPULSE_ERROR ei_run_nms(std::vector<ei_impulse_result_bounding_box_t> *resul
 
     std::vector<ei_impulse_result_bounding_box_t> new_results;
 
-    for (size_t ix = 0; ix < num_selected_indices; ix++) {
+    for (size_t ix = 0; ix < (size_t)num_selected_indices; ix++) {
         auto bb = results->at(selected_indices[ix]);
 
         printf("Found bb with label %s\n", bb.label);

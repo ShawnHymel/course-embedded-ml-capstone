@@ -22,6 +22,9 @@
 #include "edge-impulse-sdk/dsp/spectral/spectral.hpp"
 #include "edge-impulse-sdk/dsp/speechpy/speechpy.hpp"
 #include "edge-impulse-sdk/classifier/ei_signal_with_range.h"
+#ifdef EI_CLASSIFIER_HAS_MODEL_VARIABLES
+#include "model-parameters/model_variables.h"
+#endif
 
 #if defined(__cplusplus) && EI_C_LINKAGE == 1
 extern "C" {
@@ -62,6 +65,31 @@ __attribute__((unused)) int extract_spectral_analysis_features(
 
     signal->get_data(0, signal->total_length, input_matrix.buffer);
 
+#if EI_DSP_PARAMS_SPECTRAL_ANALYSIS_ANALYSIS_TYPE_WAVELET || EI_DSP_PARAMS_ALL
+    if (strcmp(config->analysis_type, "Wavelet") == 0) {
+        return spectral::wavelet::extract_wavelet_features(&input_matrix, output_matrix, config, frequency);
+    }
+#endif
+
+#if EI_DSP_PARAMS_SPECTRAL_ANALYSIS_ANALYSIS_TYPE_FFT || EI_DSP_PARAMS_ALL
+    if (strcmp(config->analysis_type, "FFT") == 0) {
+        if (config->implementation_version == 1) {
+            return spectral::feature::extract_spectral_analysis_features_v1(
+                &input_matrix,
+                output_matrix,
+                config,
+                frequency);
+        } else {
+            return spectral::feature::extract_spectral_analysis_features_v2(
+                &input_matrix,
+                output_matrix,
+                config,
+                frequency);
+        }
+    }
+#endif
+
+#if !EI_DSP_PARAMS_GENERATED || EI_DSP_PARAMS_ALL || !(EI_DSP_PARAMS_SPECTRAL_ANALYSIS_ANALYSIS_TYPE_FFT || EI_DSP_PARAMS_SPECTRAL_ANALYSIS_ANALYSIS_TYPE_WAVELET)
     if (config->implementation_version == 1) {
         return spectral::feature::extract_spectral_analysis_features_v1(
             &input_matrix,
@@ -76,7 +104,7 @@ __attribute__((unused)) int extract_spectral_analysis_features(
             config,
             frequency);
     }
-
+#endif
     return EIDSP_NOT_SUPPORTED;
 }
 

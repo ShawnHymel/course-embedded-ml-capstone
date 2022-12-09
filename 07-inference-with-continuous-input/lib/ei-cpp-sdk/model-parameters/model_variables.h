@@ -31,10 +31,13 @@ const char* ei_classifier_inferencing_categories[] = { "_idle", "_unknown", "alp
 uint8_t ei_dsp_config_3_axes[] = { 0, 1, 2, 3, 4, 5 };
 const uint32_t ei_dsp_config_3_axes_size = 6;
 ei_dsp_config_raw_t ei_dsp_config_3 = {
-    1,
-    6,
-    1.0f
+    1, // int implementationVersion
+    6, // int length of axes
+    1.0f // float scale-axes
 };
+
+#define EI_DSP_PARAMS_GENERATED 1
+
 const ei_model_performance_calibration_t ei_calibration = {
     1, /* integer version number */
     false, /* has configured performance calibration */

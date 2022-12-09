@@ -40,7 +40,12 @@
 #include <vector>
 
 #if ((EI_CLASSIFIER_OBJECT_DETECTION == 1) && (EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER == EI_CLASSIFIER_LAST_LAYER_YOLOV5_V5_DRPAI))
-#include "edge-impulse-sdk/classifier/inferencing_engines/tflite_full.h"
+#include <thread>
+#include "tensorflow/lite/c/common.h"
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/optional_debug_tools.h"
 #endif
 
 #include <linux/drpai.h>
@@ -491,14 +496,6 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
     }
 
     const size_t drpai_buff_size = drpai_address.data_out_size / sizeof(float);
-    //TODO: derive from tensors or metadata
-    const int NUM_GRID_1 = 48;
-    const int NUM_GRID_2 = 24;
-    const int NUM_GRID_3 = 12;
-    const int IMAGE_WIDTH = EI_CLASSIFIER_INPUT_WIDTH;
-    const int IMAGE_HEIGHT = EI_CLASSIFIER_INPUT_HEIGHT;
-    const int NUM_CLASS = EI_CLASSIFIER_LABEL_COUNT;
-
     const size_t drpai_features = drpai_buff_size;
 
     const size_t els_per_grid = drpai_features / ((NUM_GRID_1 * NUM_GRID_1) + (NUM_GRID_2 * NUM_GRID_2) + (NUM_GRID_3 * NUM_GRID_3));
@@ -521,7 +518,7 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
             tensor_size *= tensor->dims->data[ix];
         }
 
-        printf("input tensor %d, tensor_size=%d\n", (int)ix, (int)tensor_size);
+        EI_LOGD("input tensor %d, tensor_size=%d\n", (int)ix, (int)tensor_size);
 
         float *input = interpreter->typed_input_tensor<float>(ix);
 
@@ -535,7 +532,7 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
             memcpy(input, drpai_output_buf + grid_3_offset, grid_3_size * sizeof(float));
         }
         else {
-            printf("Cannot determine which grid to use for input tensor %d with %d tensor size\n",
+            ei_printf("ERR: Cannot determine which grid to use for input tensor %d with %d tensor size\n",
                 (int)ix, (int)tensor_size);
             return EI_IMPULSE_TFLITE_ERROR;
         }
@@ -547,7 +544,7 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
 
     uint64_t ctx_end_us = ei_read_timer_us();
 
-    printf("Invoke took %d ms.\n", (int)((ctx_end_us - ctx_start_us) / 1000));
+    EI_LOGD("Invoke took %d ms.\n", (int)((ctx_end_us - ctx_start_us) / 1000));
 
     float* out_data = interpreter->typed_output_tensor<float>(0);
 
@@ -556,9 +553,9 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
     if (debug) {
       printf("First 20 bytes: ");
       for (size_t ix = 0; ix < 20; ix++) {
-          printf("%f ", out_data[ix]);
+          ei_printf("%f ", out_data[ix]);
       }
-      printf("\n");
+      ei_printf("\n");
     }
 
     // printf("Last 5 bytes: ");
@@ -567,10 +564,7 @@ EI_IMPULSE_ERROR drpai_run_yolov5_postprocessing(
     // }
     // printf("\n");
 
-    int fill_res = fill_result_struct_f32_yolov5(impulse, result, 5, out_data, out_size);
-    if (fill_res != EI_IMPULSE_OK) {
-        return fill_res;
-    }
+    return fill_result_struct_f32_yolov5(impulse, result, 5, out_data, out_size);
 }
 #endif
 
@@ -705,7 +699,7 @@ EI_IMPULSE_ERROR run_nn_inference_image_quantized(
 
 #if ((EI_CLASSIFIER_OBJECT_DETECTION == 1) && (EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER == EI_CLASSIFIER_LAST_LAYER_YOLOV5_V5_DRPAI))
                   // do post processing
-                  drpai_run_yolov5_postprocessing(impulse, signal, result, debug);
+                  fill_res = drpai_run_yolov5_postprocessing(impulse, signal, result, debug);
 #endif
 
                 #endif

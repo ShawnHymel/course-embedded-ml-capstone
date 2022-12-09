@@ -31,6 +31,7 @@
 #define EI_CLASSIFIER_TENSAIFLOW                 5
 #define EI_CLASSIFIER_TENSORRT                   6
 #define EI_CLASSIFIER_DRPAI                      7
+#define EI_CLASSIFIER_TFLITE_TIDL                8
 
 #define EI_CLASSIFIER_SENSOR_UNKNOWN             -1
 #define EI_CLASSIFIER_SENSOR_MICROPHONE          1
@@ -89,7 +90,6 @@ typedef struct ei_impulse {
     uint16_t label_count;
     bool has_anomaly;
     float frequency;
-    bool use_quantized_dsp_block;
     size_t dsp_blocks_size;
     ei_model_dsp_t *dsp_blocks;
 

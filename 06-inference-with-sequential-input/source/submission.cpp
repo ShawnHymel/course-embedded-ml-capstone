@@ -56,7 +56,7 @@
 #define SAMPLING_PERIOD_MS  1000 / SAMPLING_FREQ_HZ     // Sampling period (ms)
 #define NUM_CHANNELS        EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME // 6 channels
 #define NUM_READINGS        EI_CLASSIFIER_RAW_SAMPLE_COUNT      // 100 readings
-#define NUM_CLASSES         EI_CLASSIFIER_LABEL_COUNT           // 4 classes
+#define NUM_CLASSES         EI_CLASSIFIER_LABEL_COUNT           // 5 classes
 
 // Function declarations
 static int get_signal_data(size_t offset, size_t length, float *out_ptr);

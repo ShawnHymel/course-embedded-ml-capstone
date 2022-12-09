@@ -472,7 +472,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
     // wsizes = [img_size[1] // stride for stride in strides]
     std::vector<int> hsizes(strides.size());
     std::vector<int> wsizes(strides.size());
-    for (int ix = 0; ix < strides.size(); ix++) {
+    for (int ix = 0; ix < (int)strides.size(); ix++) {
         hsizes[ix] = (int)floor((float)impulse->input_width / (float)strides[ix]);
         wsizes[ix] = (int)floor((float)impulse->input_height / (float)strides[ix]);
     }
@@ -485,7 +485,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
     std::vector<matrix_i32_t*> grids;
     std::vector<matrix_i32_t*> expanded_strides;
 
-    for (int ix = 0; ix < strides.size(); ix++) {
+    for (int ix = 0; ix < (int)strides.size(); ix++) {
         int hsize = hsizes.at(ix);
         int wsize = wsizes.at(ix);
         int stride = strides.at(ix);
@@ -520,7 +520,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
     matrix_i32_t c_grid(total_grid_rows, 2);
     int c_grid_ix = 0;
     for (auto g : grids) {
-        for (int row = 0; row < g->rows; row++) {
+        for (int row = 0; row < (int)g->rows; row++) {
             c_grid.buffer[c_grid_ix + 0] = g->buffer[(row * 2) + 0];
             c_grid.buffer[c_grid_ix + 1] = g->buffer[(row * 2) + 1];
             c_grid_ix += 2;
@@ -536,7 +536,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
     matrix_i32_t c_expanded_strides(total_stride_rows, 1);
     int c_expanded_strides_ix = 0;
     for (auto g : expanded_strides) {
-        for (int row = 0; row < g->rows; row++) {
+        for (int row = 0; row < (int)g->rows; row++) {
             c_expanded_strides.buffer[c_expanded_strides_ix + 0] = g->buffer[(row * 1) + 0];
             c_expanded_strides_ix += 1;
         }
@@ -545,7 +545,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
 
     const int output_rows = output_features_count / (5 + impulse->label_count);
     matrix_t outputs(output_rows, 5 + impulse->label_count, data);
-    for (int row = 0; row < outputs.rows; row++) {
+    for (int row = 0; row < (int)outputs.rows; row++) {
         float v0 = outputs.buffer[(row * outputs.cols) + 0];
         float v1 = outputs.buffer[(row * outputs.cols) + 1];
         float v2 = outputs.buffer[(row * outputs.cols) + 2];
@@ -569,7 +569,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
 
     // boxes = predictions[:, :4]
     matrix_t boxes(outputs.rows, 4);
-    for (int row = 0; row < outputs.rows; row++) {
+    for (int row = 0; row < (int)outputs.rows; row++) {
         boxes.buffer[(row * boxes.cols) + 0] = outputs.buffer[(row * outputs.cols) + 0];
         boxes.buffer[(row * boxes.cols) + 1] = outputs.buffer[(row * outputs.cols) + 1];
         boxes.buffer[(row * boxes.cols) + 2] = outputs.buffer[(row * outputs.cols) + 2];
@@ -578,7 +578,7 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
 
     // scores = predictions[:, 4:5] * predictions[:, 5:]
     matrix_t scores(outputs.rows, impulse->label_count);
-    for (int row = 0; row < outputs.rows; row++) {
+    for (int row = 0; row < (int)outputs.rows; row++) {
         float confidence = outputs.buffer[(row * outputs.cols) + 4];
         for (int cc = 0; cc < impulse->label_count; cc++) {
             scores.buffer[(row * scores.cols) + cc] = confidence * outputs.buffer[(row * outputs.cols) + (5 + cc)];
@@ -586,8 +586,8 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
     }
 
     // iterate through scores to see if we have anything with confidence
-    for (int row = 0; row < scores.rows; row++) {
-        for (int col = 0; col < scores.cols; col++) {
+    for (int row = 0; row < (int)scores.rows; row++) {
+        for (int col = 0; col < (int)scores.cols; col++) {
             float confidence = scores.buffer[(row * scores.cols) + col];
 
             if (confidence >= impulse->object_detection_threshold && confidence <= 1.0f) {
@@ -607,13 +607,13 @@ __attribute__((unused)) static EI_IMPULSE_ERROR fill_result_struct_f32_yolox(con
                 if (x < 0) {
                     x = 0;
                 }
-                if (x > impulse->input_width) {
+                if (x > (int)impulse->input_width) {
                     x = impulse->input_width;
                 }
                 if (y < 0) {
                     y = 0;
                 }
-                if (y > impulse->input_height) {
+                if (y > (int)impulse->input_height) {
                     y = impulse->input_height;
                 }
 
