@@ -83,7 +83,7 @@ After submission, wait a few minutes to see your grade. You might need to refres
 
 The *submission.cpp* file is structured so that it will run on an Arduino Nano 33 BLE Sense! Simply copy the code from that file into a new Arduino sktech. Make sure that you have installed the **Arduino Mbed OS nano Boards** package in *Tools > Boards Manager*.
 
-After uploading the program to your Arduino board, open the Serial Terminal to see the output.
+After uploading the program to your Arduino board, open the Serial Monitor to see the output.
 
 For data collection, you can run *serial-data-collect-csv.py* found in this directory to store the raw readings to a CSV file. With the Arduino running your collection code and connected to your computer, run the script as follows:
 

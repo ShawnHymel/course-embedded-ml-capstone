@@ -22,14 +22,31 @@
  * Makefile for this project. In a console, enter:
  * 
  *  make -j
- *  ./build/app tests/alpha.8ed919a3a61d.csv
+ *  ./build/app tests/alpha.07550d51428f.csv
  * 
  * This will run the simulator and feed values from the given .csv file to your
  * IMU object. You should see the answer printed to the screen:
  * 
- *  ANS: alpha, 0.996094
+ *  ANS: alpha, 1.000000
  * 
- * Try with the other test files!
+ * Try with the other test files! Here is the output you should see from the 
+ * different test files. There are some misclassifications, but that's OK! It 
+ * will help you determine if your code is correct.
+ * 
+ *          Filename            |           Output
+ *  ----------------------------|--------------------------
+ *   _idle.0c0bb1db5f98.csv     | ANS: _idle, 1.000000
+ *   _idle.2ea19a4d31be.csv     | ANS: _idle, 1.000000
+ *   _unknown.7f8f640c175f.csv  | ANS: alpha, 1.000000
+ *   _unknown.b9919a398a76.csv  | ANS: _unknown, 1.000000
+ *   alpha.07550d51428f.csv     | ANS: alpha, 1.000000
+ *   alpha.69d4ba7eca3b.csv     | ANS: beta, 1.000000
+ *   beta.04c2828e445f.csv      | ANS: beta, 1.000000
+ *   beta.ebc0224b155a.csv      | ANS: beta, 1.000000
+ *   gamma.1affb24ae350.csv     | ANS: gamma, 1.000000
+ *   gamma.d7d5f7d5fe3d.csv     | ANS: gamma, 0.999690
+ * 
+ * If you are getting these answers, then your code is most likely correct.
  * 
  * Note: you should be able to copy this program into the Arduino IDE and have
  * it run on the Arduino Nano 33 BLE Sense.
@@ -39,7 +56,7 @@
 // switch between Arduino and computer (autograder) libraries as needed.
 #ifdef ARDUINO
     #include <Arduino_LSM9DS1.h>
-    #include <magic-wand-capstone_inferencing.h>
+    #include <magic-wand_inferencing.h>
 #else
     #include "time-emulator.h"
     #include "imu-emulator.h"
@@ -48,24 +65,23 @@
 
 // Settings
 #define LED_R_PIN           22        // Red LED pin
-#define ANOMALY_THRESHOLD   0.3       // Anything over this is an anomaly
 
-// Constants
+// Constants (many come from lib/ei-cpp-sdk/model-parameters/model_metadata.h)
 #define CONVERT_G_TO_MS2    9.80665f  // Used to convert G to m/s^2
 #define SAMPLING_FREQ_HZ    EI_CLASSIFIER_FREQUENCY     // 100 Hz sampling rate
 #define SAMPLING_PERIOD_MS  1000 / SAMPLING_FREQ_HZ     // Sampling period (ms)
 #define NUM_CHANNELS        EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME // 6 channels
 #define NUM_READINGS        EI_CLASSIFIER_RAW_SAMPLE_COUNT      // 100 readings
-#define NUM_CLASSES         EI_CLASSIFIER_LABEL_COUNT           // 5 classes
+#define NUM_CLASSES         EI_CLASSIFIER_LABEL_COUNT           // 4 classes
 
 // Function declarations
 static int get_signal_data(size_t offset, size_t length, float *out_ptr);
 
 // Means and standard deviations from our dataset curation
-static const float means[] = {-0.2238, -0.3129, 5.6543, -4.8021, 4.0536, -6.4238};
-static const float std_devs[] = {5.6031, 7.5372, 7.6538, 149.2136, 125.0134, 133.8875};
+static const float means[] = {-0.3314, -0.1378, 4.7691, -3.6497, 3.4743, -5.9148};
+static const float std_devs[] = {5.7116, 7.4646, 7.8218, 137.2259, 118.1099, 126.3644};
 
-// Store raw readings in a buffer that has 6 * 100 = 600 elements
+// Store raw readings in a buffer that has 6 * 150 = 900 elements
 static float input_buf[NUM_CHANNELS * NUM_READINGS];
 
 // Wrapper for raw input buffer
@@ -106,15 +122,19 @@ void loop() {
     digitalWrite(LED_R_PIN, LOW);
 #endif
 
-    // Sample the IMU for 1 second. You should end up with 100 readings for each 
+    // Sample the IMU for 1 second. You should end up with 150 readings for each 
     // of the 6 channels after the 1 second is over.
-    //  - Make sure you wait between each reading long enough for a 100 Hz 
-    //    sampling rate.
+    //  - Convert accelerometer raw readings from G-force to m/s^2
     //  - For each reading, perform standardization using the mean and std_dev
     //    associated with each channel
     //  - Store your standardized readings in input_buf[]
     //  - Recall that the order of input_buf[] should be 
     //    [acc_x0, acc_y0, acc_z0, gyr_x0, gyr_y0, gyr_z0, acc_x1, ...]
+    //  - Make sure you wait between each reading long enough for a 100 Hz 
+    //    sampling rate.
+    //  - Hint: this looks similar to the loop you wrote for the data collection
+    //    exercise (the differences are that you don't need to collect the 
+    //    timestamps but you need to perform standardization on the readings)
     // --- YOUR CODE HERE ---
     for (int i = 0; i < NUM_READINGS; i++) {
 
@@ -158,10 +178,23 @@ void loop() {
     digitalWrite(LED_R_PIN, HIGH);
 #endif
 
-    // Call run_classifier() to perform preprocessing and inferece
+    // Call run_classifier() to perform preprocessing and inference
     // --- YOUR CODE HERE ---
     res = run_classifier(&sig, &result, false);
     // --- END CODE ---
+
+    // Print return code, time it took to perform inference, and inference
+    // results. Note that the grader will ignore these outputs.
+    ei_printf("run_classifier returned: %d\r\n", res);
+    ei_printf("Timing: DSP %d ms, inference %d ms, anomaly %d ms\r\n", 
+            result.timing.dsp, 
+            result.timing.classification, 
+            result.timing.anomaly);
+    ei_printf("Predictions:\r\n");
+    for (uint16_t i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++) {
+        ei_printf("  %s: ", ei_classifier_inferencing_categories[i]);
+        ei_printf("%.5f\r\n", result.classification[i].value);
+    }
 
     // Find the label with the highest classification value
     // - Category labels are stored in the 
@@ -181,35 +214,14 @@ void loop() {
     }
     // --- END CODE ---
 
-    // Print return code and how long it took to perform inference
-    ei_printf("run_classifier returned: %d\r\n", res);
-    ei_printf("Timing: DSP %d ms, inference %d ms, anomaly %d ms\r\n", 
-            result.timing.dsp, 
-            result.timing.classification, 
-            result.timing.anomaly);
-
-    // Print inference/prediction results
-    ei_printf("Predictions:\r\n");
-    for (uint16_t i = 0; i < EI_CLASSIFIER_LABEL_COUNT; i++) {
-        ei_printf("  %s: ", ei_classifier_inferencing_categories[i]);
-        ei_printf("%.5f\r\n", result.classification[i].value);
+    // Print the answer (line must begin with "ANS: " for the autograder)
+    if (max_idx == -1) {
+        ei_printf("Index of label with highest probability not set\r\n");
+    } else {
+        ei_printf("ANS: %s, %f\r\n", 
+                    ei_classifier_inferencing_categories[max_idx], 
+                    max_val);
     }
-
-        // Print anomaly score
-#if EI_CLASSIFIER_HAS_ANOMALY == 1
-        ei_printf("Anomaly: %.3f\r\n", result.anomaly);
-#endif
-    
-        // Print the answer (line must begin with "ANS: " for the autograder)
-        if (result.anomaly < ANOMALY_THRESHOLD) {
-          ei_printf("ANS: %s, %f\r\n", 
-                      ei_classifier_inferencing_categories[max_idx], 
-                      result.classification[max_idx].value);
-        } else {
-          ei_printf("ANS: anomaly, %f\r\n", 
-                      ei_classifier_inferencing_categories[max_idx], 
-                      result.anomaly);
-        }
 
     // Wait some time before running inference again
 #if ARDUINO
@@ -223,18 +235,6 @@ void loop() {
 static int get_signal_data(size_t offset, size_t length, float *out_ptr) {
     for (size_t i = 0; i < length; i++) {
         out_ptr[i] = (input_buf + offset)[i];
-    }
-
-    // Uncomment this section to print the whole inference buffer
-    int timestamp = 0;
-    int counter = 0;
-    for (int i = 0; i < length / NUM_CHANNELS; i++) {
-        ei_printf("%i, ", timestamp);
-        timestamp += SAMPLING_PERIOD_MS;
-        for (int j = 0; j < (NUM_CHANNELS - 1); j++) {
-            ei_printf("%.2f, ", out_ptr[(i * NUM_CHANNELS) + j]);
-        }
-        ei_printf("%.2f\r\n", out_ptr[(i * NUM_CHANNELS) + (NUM_CHANNELS - 1)]);
     }
 
     return EIDSP_OK;
