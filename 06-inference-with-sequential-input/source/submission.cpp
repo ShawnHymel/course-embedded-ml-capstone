@@ -136,41 +136,7 @@ void loop() {
     //    exercise (the differences are that you don't need to collect the 
     //    timestamps but you need to perform standardization on the readings)
     // --- YOUR CODE HERE ---
-    for (int i = 0; i < NUM_READINGS; i++) {
 
-        // Take timestamp so we can hit our target frequency
-        timestamp = millis();
-
-        // Get raw readings from the accelerometer and gyroscope
-        IMU.readAcceleration(acc_x, acc_y, acc_z);
-        IMU.readGyroscope(gyr_x, gyr_y, gyr_z);
-
-        // Convert accelerometer units from G to m/s^s
-        acc_x *= CONVERT_G_TO_MS2;
-        acc_y *= CONVERT_G_TO_MS2;
-        acc_z *= CONVERT_G_TO_MS2;
-
-        // Perform standardization on each reading
-        // Use the values from means[] and std_devs[]
-        acc_x = (acc_x - means[0]) / std_devs[0];
-        acc_y = (acc_y - means[1]) / std_devs[1];
-        acc_z = (acc_z - means[2]) / std_devs[2];
-        gyr_x = (gyr_x - means[3]) / std_devs[3];
-        gyr_y = (gyr_y - means[4]) / std_devs[4];
-        gyr_z = (gyr_z - means[5]) / std_devs[5];
-
-        // Fill input_buf with the standardized readings. Recall tha the order
-        // is [acc_x0, acc_y0, acc_z0, gyr_x0, gyr_y0, gyr_z0, acc_x1, ...]
-        input_buf[(NUM_CHANNELS * i) + 0] = acc_x;
-        input_buf[(NUM_CHANNELS * i) + 1] = acc_y;
-        input_buf[(NUM_CHANNELS * i) + 2] = acc_z;
-        input_buf[(NUM_CHANNELS * i) + 3] = gyr_x;
-        input_buf[(NUM_CHANNELS * i) + 4] = gyr_y;
-        input_buf[(NUM_CHANNELS * i) + 5] = gyr_z;
-
-        // Wait just long enough for our sampling period
-        while (millis() - timestamp < SAMPLING_PERIOD_MS);
-    }
     // --- END CODE ---
 
     // Turn off LED to show we're done recording
@@ -180,7 +146,7 @@ void loop() {
 
     // Call run_classifier() to perform preprocessing and inference
     // --- YOUR CODE HERE ---
-    res = run_classifier(&sig, &result, false);
+    
     // --- END CODE ---
 
     // Print return code, time it took to perform inference, and inference
@@ -206,12 +172,7 @@ void loop() {
     float max_val = 0.0;
     int max_idx = -1;
     // --- YOUR CODE HERE ---
-    for (int i = 0; i < NUM_CLASSES; i++) {
-        if (result.classification[i].value > max_val) {
-            max_val = result.classification[i].value;
-            max_idx = i;
-        }
-    }
+    
     // --- END CODE ---
 
     // Print the answer (line must begin with "ANS: " for the autograder)
