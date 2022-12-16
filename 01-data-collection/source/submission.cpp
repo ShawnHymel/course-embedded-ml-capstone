@@ -78,7 +78,7 @@
 #endif
 
 // Settings
-#define LED_R_PIN           22        // Red LED pin
+#define LED_REC_PIN           LED_BUILTIN   // Yellow LED near USB connector
 
 // Constants
 #define CONVERT_G_TO_MS2    9.80665f  // Used to convert G to m/s^2
@@ -120,8 +120,8 @@ void setup() {
     // Enable LED pin (RGB LEDs are active low on the Nano 33 BLE Sense)
     // and initialize serial (only on Arduino)
 #ifdef ARDUINO
-    pinMode(LED_R_PIN, OUTPUT);
-    digitalWrite(LED_R_PIN, HIGH);
+    pinMode(LED_REC_PIN, OUTPUT);
+    digitalWrite(LED_REC_PIN, LOW);
     Serial.begin(115200);
 #endif
 
@@ -141,7 +141,7 @@ void loop() {
 
     // Turn on LED to show we're recording
 #ifdef ARDUINO
-    digitalWrite(LED_R_PIN, LOW);
+    digitalWrite(LED_REC_PIN, HIGH);
 #endif
 
     // Sample the IMU for 1.5 seconds. You should have 150 readings for each of
@@ -160,13 +160,13 @@ void loop() {
     for (int i = 0; i < NUM_READINGS; i++) {
         timestamp = millis();
         // --- YOUR CODE HERE ---
-
+        
         // --- END CODE ---
     }
 
     // Turn off LED to show we're done recording
 #ifdef ARDUINO
-    digitalWrite(LED_R_PIN, HIGH);
+    digitalWrite(LED_REC_PIN, LOW);
 #endif
 
     // Print header
@@ -184,7 +184,7 @@ void loop() {
     //    https://www.sas.upenn.edu/~saul/parasite/man/man3/printf.3.html
     //  - Don't forget to end your line with "\r\n"
     // --- YOUR CODE HERE ---
-
+    
     // --- END CODE ---
 
     // Print empty line to transmit termination of recording

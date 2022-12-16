@@ -64,7 +64,10 @@
 #endif
 
 // Settings
-#define LED_R_PIN           22        // Red LED pin
+#define LED_REC_PIN         LED_BUILTIN // Yellow LED near USB connector
+#define LED_R_PIN           22          // Red LED pin
+#define LED_G_PIN           23          // Green LED pin
+#define LED_B_PIN           24          // Blue LED pin
 
 // Constants (many come from lib/ei-cpp-sdk/model-parameters/model_metadata.h)
 #define CONVERT_G_TO_MS2    9.80665f  // Used to convert G to m/s^2
@@ -93,8 +96,14 @@ void setup() {
     // Enable LED pin (RGB LEDs are active low on the Nano 33 BLE Sense)
     // and initialize serial (only on Arduino)
 #ifdef ARDUINO
+    pinMode(LED_REC_PIN, OUTPUT);
     pinMode(LED_R_PIN, OUTPUT);
+    pinMode(LED_G_PIN, OUTPUT);
+    pinMode(LED_B_PIN, OUTPUT);
+    digitalWrite(LED_REC_PIN, LOW);
     digitalWrite(LED_R_PIN, HIGH);
+    digitalWrite(LED_G_PIN, HIGH);
+    digitalWrite(LED_B_PIN, HIGH);
     Serial.begin(115200);
 #endif
 
@@ -119,7 +128,7 @@ void loop() {
 
     // Turn on LED to show we're recording
 #ifdef ARDUINO
-    digitalWrite(LED_R_PIN, LOW);
+    digitalWrite(LED_REC_PIN, HIGH);
 #endif
 
     // Sample the IMU for 1 second. You should end up with 150 readings for each 
@@ -136,12 +145,12 @@ void loop() {
     //    exercise (the differences are that you don't need to collect the 
     //    timestamps but you need to perform standardization on the readings)
     // --- YOUR CODE HERE ---
-
+    
     // --- END CODE ---
 
     // Turn off LED to show we're done recording
 #ifdef ARDUINO
-    digitalWrite(LED_R_PIN, HIGH);
+    digitalWrite(LED_REC_PIN, LOW);
 #endif
 
     // Call run_classifier() to perform preprocessing and inference
