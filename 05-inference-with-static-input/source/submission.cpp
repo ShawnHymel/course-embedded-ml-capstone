@@ -13,7 +13,8 @@
  * 
  * We have copied the "raw features" from the test sample alpha.151c1bc12b53
  * into the input_buf array for you. This will be our test sample. The input_buf
- * needs to be passed to the run_classifier() function in order to perform inference.
+ * needs to be passed to the run_classifier() function in order to perform 
+ * inference.
  * 
  * Once inference has been performed, you will need to find the label with the 
  * highest value. You must print the label with the highest prediction value 
@@ -36,9 +37,18 @@
  * When you run the program, you should have the following printed to the
  * console:
  * 
- *   ANS: alpha, 0.731882
+ *   run_classifier returned: 0
+ *   Timing: DSP 0 ms, inference 0 ms, anomaly 0 ms
+ *   Predictions:
+ *   _idle: 0.00003
+ *   _unknown: 0.00063
+ *   alpha: 0.56203
+ *   beta: 0.00058
+ *   gamma: 0.43673
+ *   ANS: alpha, 0.562027
  * 
- * If you see this, then you know your code is correct!
+ * If you see this, then you know your code is correct! Once again, the grader
+ * only looks for the line that starts with "ANS:".
  * 
  * Note: you should be able to copy this program into the Arduino IDE and have
  * it run on the Arduino Nano 33 BLE Sense.
@@ -115,7 +125,7 @@ void setup() {
     float max_val = 0.0;
     int max_idx = -1;
     // --- YOUR CODE HERE ---
-    
+
     // --- END CODE ---
 
     // Print the answer (line must begin with "ANS: " for the autograder)
